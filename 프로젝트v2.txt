@@ -184,7 +184,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 // GitHub 자격 증명을 사용하여 리포지토리 클론
-                git credentialsId: 'github_access_token', url: 'https://github.com/cks1031/project-jenkins.git'
+                git credentialsId: 'github_access_token', url: 'https://github.com/GwakByeongGuk/finalproject.git'
             }
         }
 
