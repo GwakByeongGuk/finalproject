@@ -1,0 +1,214 @@
+쿠버네티스
+aws 퍼블릭 IPv4 주소 : 3.38.132.87
+aws 프라이빗 IPv4 주소 : 172.31.18.35
+
+nginx
+aws 퍼블릭 IPv4 주소 : 3.39.194.34
+aws 프라이빗 IPv4 주소 : 172.31.42.164
+
+도커 빌드 및 이미지 런
+
+docker build -t mariadb-v1 .
+docker run -d -p 3306:3306 mariadb-v1
+
+docker build -t admin-v1 .
+docker run -d -p 8000:8000 admin-v1
+
+docker build -t visitor-v1 .
+docker run -d -p 8050:8050 visitor-v1
+
+docker build -t frontend-v1 .
+docker run -d -p 3000:3000 frontend-v1
+
+도커 삭제
+
+모든 컨테이너 중지
+docker stop $(docker ps -q)
+
+모든 중지된 컨테이너 삭제
+docker rm $(docker ps -a -q)
+
+중지와 삭제를 동시에 수행
+docker rm -f $(docker ps -aq)
+
+모든 이미지 삭제
+docker rmi $(docker images -q)
+
+
+쿠버네티스용 도커 빌드 및 도커 허브에 이미지 푸쉬
+
+docker build -t nanakia1031/prj-admin .
+docker push nanakia1031/prj-admin
+
+docker build -t nanakia1031/prj-visitor .
+docker push nanakia1031/prj-visitor
+
+docker build -t nanakia1031/prj-frontend .
+docker push nanakia1031/prj-frontend
+
+쿠버네티스 배포 cks1031@naver.com
+
+mk apply -f mariadb_configmap.yaml
+mk apply -f mariadb.yaml
+mk apply -f admin-service.yaml
+mk apply -f visitor-service.yaml
+mk apply -f frontend.yaml
+
+배포한 쿠버네티스 삭제
+
+mk delete -f mariadb_configmap.yaml
+mk delete -f mariadb.yaml
+mk delete -f admin-service.yaml
+mk delete -f visitor-service.yaml
+mk delete -f frontend.yaml
+mk delete -f ingress.yaml
+
+쿠버네티스 배포 파일 수정
+각 각의 아이피 쿠버네티스의 서비스이름으로 대체
+main.py & index.js
+
+mariadb-service
+
+index.js
+const adminServiceUrl = "http://admin-service:8000";
+const visitorServiceUrl = "http://visitor-service:8050";
+
+`${adminServiceUrl}`
+`${visitorServiceUrl}`
+
+github = 젠킨스 자동화 디렉터리 구조
+
+project-root/
+├── admin-service/
+│   ├── Dockerfile                 # admin-service용 Dockerfile
+│   ├── app/                       # FastAPI 소스 코드 (예: main.py, requirements.txt 등)
+│   └── requirements.txt           # FastAPI 종속성 파일
+│
+├── visitor-service/
+│   ├── Dockerfile                 # visitor-service용 Dockerfile
+│   ├── app/                       # FastAPI 소스 코드 (예: main.py, requirements.txt 등)
+│   └── requirements.txt           # FastAPI 종속성 파일
+│
+├── frontend/
+│   ├── Dockerfile                 # frontend용 Dockerfile (Node.js)
+│   ├── src/                       # Express 소스 코드 (예: index.js, package.json 등)
+│   ├── package.json               # Node.js 종속성 파일
+│   └── package-lock.json          # Node.js 종속성 잠금 파일
+│
+├── k8s/                           # Kubernetes 리소스 정의 디렉터리
+│   ├── mariadb_configmap.yaml     # MariaDB 설정 ConfigMap
+│   ├── mariadb.yaml               # MariaDB 배포 및 서비스 설정
+│   ├── admin-service.yaml         # admin-service 배포 및 서비스 설정
+│   ├── visitor-service.yaml       # visitor-service 배포 및 서비스 설정
+│   └── frontend.yaml              # frontend 배포 및 서비스 설정
+│
+├── .gitignore                     # Git에서 제외할 파일들
+├── README.md                      # 프로젝트 설명서
+└── Jenkinsfile                    # Jenkins 파이프라인 설정 파일
+
+# 참고사항
+이미지 태그 : Kubernetes YAML 파일에서 image 속성에 Docker Hub의 최신 이미지 태그 (latest 또는 특정 버전 태그)를 지정
+containers:
+  - name: admin-service
+    image: nanakia1031/admin-service:latest  # Docker Hub에 이미 있는 최신 이미지 사용
+
+젠킨스 설치
+
+nginx 설치 된 인스턴스에 설치!!
+
+콘솔에서 접속 후
+
+docker volume create jenkins-data
+
+docker network create jenkins-network
+
+docker run -d --name jenkins \
+-p 8081:8080 -p 50000:50000 \
+-v jenkins-data:/var/jenkins_home \
+-v /var/run/docker.sock:/var/run/docker.sock \
+jenkins/jenkins:lts
+
+젠킨스 암호 알아내기
+docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword
+
+aws 관리콘솔에서 8081, 50000 포트 개방!
+-> 0.0.0.0/0
+
+젠킨스 비밀번호
+=> 4bf721a2a74642eeb514be117a3ce163
+젠킨스 계정 => admin / admin / admin
+
+GIT , GitHub, GitHub API 플러그인 설치
+추가적으로 Generic Webhook Trigger,
+GitHub IntegrationVersion 플러그인 설치
+SSH Agent 설치
+kubernetes 설치
+
+Dashboard => microk8s => Configuration
+
+GIT허브 저장소 생성
+
+저장소 생성후 Settings -> Webhooks -> Add webhook 
+
+-> Payload URL * -> https://젠킨스IP주소:8081/github-webhook/ 
+
+*주의* : 젠킨스IP주소는 반드시 공용 IP주쇼여야 함!
+단, 사설주소를 사용하는 경우 ngrok를 사용해야 할 수도 있음
+
+GitHub PAT 생성
+Global Settings -> Developer Settings -> Tokens (classic)
+
+혹은 기존의 PAT 사용
+
+젠킨스
+
+Jenkins credentials 생성
+
+Jenkins 관리 -> Security : Credentials -> Domains : Global -> Add Credentials
+
+-> Username : Github Name (cks1031)
+-> Password : Github PAT (PAT => 암호값)
+-> ID : github_access_token (고정값 = github_access_token)
+
+GIT허브
+
+Github Webhooks - Jenkins 연동확인
+생성한 jenkins_fastapi -> Settings -> Webhooks -> Recent Deliveries 
+
+new item => 파이프라인
+젠킨스 코드 확인 필요
+
+pipeline {
+    agent any
+    stages {
+        stage('Checkout') {
+            steps {
+                // GitHub 자격 증명을 사용하여 리포지토리 클론
+                git credentialsId: 'github_access_token', url: 'https://github.com/cks1031/project-jenkins.git'
+            }
+        }
+
+        stage('Deploy to MicroK8s') {
+            steps {
+                // AWS 인스턴스에 SSH로 접속하여 MicroK8s 명령어 실행
+                sshagent(['aws-ec2-ssh']) { // SSH 자격 증명 ID를 사용
+                    sh """
+                    ssh -t -o StrictHostKeyChecking=no ubuntu@43.203.250.144 << 'EOF'
+                        source ~/.bashrc  # Load the user's profile to access aliases
+                        cd /home/ubuntu/project  # GitHub 레포지토리 클론된 디렉토리로 이동
+                        microk8s kubectl apply -f k8s/mariadb_configmap.yaml
+                         microk8s kubectl apply -f k8s/mariadb.yaml
+                         microk8s kubectl apply -f k8s/admin-service.yaml
+                         microk8s kubectl apply -f k8s/visitor-service.yaml
+                         microk8s kubectl apply -f k8s/frontend.yaml
+                    """
+                }
+            }
+        }
+    }
+    post {
+        always {
+            cleanWs()
+        }
+    }
+}
