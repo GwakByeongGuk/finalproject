@@ -55,7 +55,7 @@ pipeline {
 
         stage('Update ArgoCD Deployment YAML with Image Tags') {
             steps {
-                dir('project-argocd') {
+                dir('finalprojectargocd') {
                     sh """
                     sed -i "s|image: {{.Values.image.admin.repository}}:{{.Values.image.admin.tag}}|image: ${DOCKER_IMAGE_OWNER}/prj-admin:${DOCKER_BUILD_TAG}|g" deploy-argocd/templates/deployment.yaml
                     sed -i "s|image: {{.Values.image.visitor.repository}}:{{.Values.image.visitor.tag}}|image: ${DOCKER_IMAGE_OWNER}/prj-visitor:${DOCKER_BUILD_TAG}|g" deploy-argocd/templates/deployment.yaml
@@ -67,7 +67,7 @@ pipeline {
         
         stage('Commit Changes') {
             steps {
-                dir('project-argocd') {
+                dir('finalprojectargocd') {
                     script {
                         def changes = sh(script: "git status --porcelain", returnStdout: true).trim()
                         if (changes) {
@@ -87,7 +87,7 @@ pipeline {
 
         stage('Push Changes') {
             steps {
-                dir('project-argocd') {
+                dir('finalprojectargocd') {
                     script {
                         sh "git push https://${GIT_CREDENTIALS_USR}:${GIT_CREDENTIALS_PSW}@github.com/${ARGOCD_REPO_URL} main"
                     }
