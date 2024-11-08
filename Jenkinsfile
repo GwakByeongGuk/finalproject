@@ -79,7 +79,7 @@ pipeline {
             steps {
                 dir('finalproject') {
                     sh '''
-                    git push https://${GIT_CREDENTIALS_USR}:${GIT_CREDENTIALS_PSW}@github.com/${REPO_URL} main
+                    git push https://github.com/GwakByeongGuk/finalproject.git main
                     '''
                 }
             }
