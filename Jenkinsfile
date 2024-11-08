@@ -3,7 +3,6 @@ pipeline {
 
     environment {
         DOCKER_IMAGE_OWNER = 'gwakbyeongguk'
-        DOCKER_IMAGE_TAG = 'latest'
         DOCKER_BUILD_TAG = 'v${env.BUILD_NUMBER}'
         DOCKER_TOKEN = credentials('dockerhub') // Docker Hub 자격 증명
         GIT_CREDENTIALS = credentials('github')
@@ -21,9 +20,12 @@ pipeline {
         stage('Docker Image Building') {
             steps {
                 script {
-                    sh "docker build -t ${DOCKER_IMAGE_OWNER}/prj-frontend:${DOCKER_IMAGE_TAG} ./frontend"
-                    sh "docker build -t ${DOCKER_IMAGE_OWNER}/prj-admin:${DOCKER_IMAGE_TAG} ./admin-service"
-                    sh "docker build -t ${DOCKER_IMAGE_OWNER}/prj-visitor:${DOCKER_IMAGE_TAG} ./visitor-service"
+                    sh "docker build -t ${DOCKER_IMAGE_OWNER}/prj-frontend:latest"
+                                    "-t ${DOCKER_IMAGE_OWNER}/prj-frontend:${DOCKER_BUILD_TAG} ./frontend"
+                    sh "docker build -t ${DOCKER_IMAGE_OWNER}/prj-admin:latest"
+                                    "-t ${DOCKER_IMAGE_OWNER}/prj-admin:${DOCKER_BUILD_TAG} ./admin-service"
+                    sh "docker build -t ${DOCKER_IMAGE_OWNER}/prj-visitor:latest"
+                                    "-t ${DOCKER_IMAGE_OWNER}/prj-visitor:${DOCKER_BUILD_TAG} ./visitor-service"
                 }
             }
         }
@@ -39,9 +41,12 @@ pipeline {
         stage('Docker Image Pushing') {
             steps {
                 script {
-                    sh "docker push ${DOCKER_IMAGE_OWNER}/prj-frontend:${DOCKER_IMAGE_TAG}"
-                    sh "docker push ${DOCKER_IMAGE_OWNER}/prj-admin:${DOCKER_IMAGE_TAG}"
-                    sh "docker push ${DOCKER_IMAGE_OWNER}/prj-visitor:${DOCKER_IMAGE_TAG}"
+                    sh "docker push ${DOCKER_IMAGE_OWNER}/prj-frontend:latest"
+                       "docker push ${DOCKER_IMAGE_OWNER}/prj-frontend:${DOCKER_BUILD_TAG}"
+                    sh "docker push ${DOCKER_IMAGE_OWNER}/prj-admin:latest"
+                       "docker push ${DOCKER_IMAGE_OWNER}/prj-admin:${DOCKER_BUILD_TAG}"
+                    sh "docker push ${DOCKER_IMAGE_OWNER}/prj-visitor:latest"
+                       "docker push ${DOCKER_IMAGE_OWNER}/prj-visitor:${DOCKER_BUILD_TAG}"
                 }
             }
         }
@@ -58,7 +63,7 @@ pipeline {
         
         stage('Commit Changes') {
             steps {
-                dir('finalproject') {
+                dir('.t') {
                     sh '''
                     git config user.name "admin"
                     git config user.email "admin@jenkins.com"
@@ -71,7 +76,7 @@ pipeline {
 
         stage('Push Changes') {
             steps {
-                dir('finalproject') {
+                dir('.') {
                     sh '''
                     git push https://${GIT_CREDENTIALS_USR}:${GIT_CREDENTIALS_PSW}@github.com/${REPO_URL} main
                     '''
