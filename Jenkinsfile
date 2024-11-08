@@ -61,7 +61,7 @@ pipeline {
         
         stage('Commit Changes') {
             steps {
-                dir('hello-msa-cd') {
+                dir('finalproject') {
                 sh '''
                     git config user.name "아이디"
                     git config user.email "아이디@jenkins.com"
