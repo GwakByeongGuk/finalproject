@@ -7,7 +7,7 @@ pipeline {
         DOCKER_TOKEN = credentials('dockerhub') // Docker Hub 자격 증명
         GIT_CREDENTIALS = credentials('github')
         REPO_URL = 'GwakByeongGuk/finalproject.git'
-        ARGOCD_REPO_URL = 'GwakByeongGuk/finalprojectargo.git'
+        ARGOCD_REPO_URL = 'GwakByeongGuk/finalprojectargocd.git'
         COMMIT_MESSAGE = 'Update README.md via Jenkins Pipeline'
     }
 
