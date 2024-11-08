@@ -63,8 +63,8 @@ pipeline {
             steps {
                 dir('finalproject') {
                 sh '''
-                    git config user.name "아이디"
-                    git config user.email "아이디@jenkins.com"
+                    git config user.name "admin"
+                    git config user.email "admin@jenkins.com"
                     git add README.md
                     git commit -m "${COMMIT_MESSAGE}"
                 '''
