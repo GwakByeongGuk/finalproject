@@ -64,10 +64,10 @@ pipeline {
         
         stage('Commit Changes') {
             steps {
-                dir('.t') {
+                dir('finalproject') {
                     sh '''
-                    git config user.name "admin"
-                    git config user.email "admin@jenkins.com"
+                    git config user.name "GwakByeongGuk"
+                    git config user.email "GwakByeongGuk@jenkins.com"
                     git add README.md
                     git commit -m "${COMMIT_MESSAGE}"
                     '''
@@ -77,7 +77,7 @@ pipeline {
 
         stage('Push Changes') {
             steps {
-                dir('.') {
+                dir('finalproject') {
                     sh '''
                     git push https://${GIT_CREDENTIALS_USR}:${GIT_CREDENTIALS_PSW}@github.com/${REPO_URL} main
                     '''
