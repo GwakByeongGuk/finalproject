@@ -63,12 +63,19 @@ pipeline {
         
         stage('Commit Changes') {
             steps {
-                sh '''
-                git config user.name "GwakByeongGuk"
-                git config user.email "GwakByeongGuk@jenkins.com"
-                git add README.md
-                git commit -m "${COMMIT_MESSAGE}"
-                '''
+                script {
+                    def changes = sh(script: "git status --porcelain", returnStdout: true).trim()
+                    if (changes) {
+                        sh '''
+                        git config user.name "GwakByeongGuk"
+                        git config user.email "GwakByeongGuk@jenkins.com"
+                        git add README.md
+                        git commit -m "${COMMIT_MESSAGE}"
+                        '''
+                    } else {
+                        echo "No changes to commit"
+                    }
+                }
             }
         }
 
