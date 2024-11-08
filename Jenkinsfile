@@ -13,7 +13,11 @@ pipeline {
     stages {
         stage('Clone from SCM') {
             steps {
-                git branch: 'main', url: 'https://github.com/GwakByeongGuk/finalproject.git'
+                sh'''
+                    rm -rf project-jenkins finalproject
+                    git branch: 'main', url: 'https://github.com/GwakByeongGuk/finalproject.git'
+                    git branch: 'main', url: 'https://github.com/GwakByeongGuk/finalprojectargo.git'
+                '''
             }
         }
 
@@ -50,31 +54,27 @@ pipeline {
                 }
             }
         }
-
-        stage('Trigger ArgoCD') {
+        
+        stage('Update ArgoCD Deployment YAML with Image Tags') {
             steps {
-                script {
-                    sh '''
-                    curl -k -X POST https://15.164.179.57:31380/api/webhook -H "Content-Type: application/json" -d '{"ref": "main"}'
-                    '''
-                }
+                sh '''
+                sed -i 's|image: {{.Values.image.admin.repository}}:{{.Values.image.admin.tag}}|image: ${DOCKER_IMAGE_OWNER}/prj-admin:${DOCKER_IMAGE_TAG}|g' project-argocd/deploy-argocd/templates/deployment.yaml
+                sed -i 's|image: {{.Values.image.visitor.repository}}:{{.Values.image.visitor.tag}}|image: ${DOCKER_IMAGE_OWNER}/prj-visitor:${DOCKER_IMAGE_TAG}|g' project-argocd/deploy-argocd/templates/deployment.yaml
+                sed -i 's|image: {{.Values.image.frontend.repository}}:{{.Values.image.frontend.tag}}|image: ${DOCKER_IMAGE_OWNER}/prj-frontend:${DOCKER_IMAGE_TAG}|g' project-argocd/deploy-argocd/templates/deployment.yaml
+                '''
             }
         }
         
         stage('Commit Changes') {
             steps {
-                script {
-                    def changes = sh(script: "git status --porcelain", returnStdout: true).trim()
-                    if (changes) {
-                        sh '''
-                        git config user.name "GwakByeongGuk"
-                        git config user.email "GwakByeongGuk@jenkins.com"
-                        git add README.md
-                        git commit -m "${COMMIT_MESSAGE}"
-                        '''
-                    } else {
-                        echo "No changes to commit"
-                    }
+                dir('finalproject') {
+                    sh '''
+                    git config user.name "GwakByeongGuk"
+                    git config user.email "GwakByeongGuk@jenkins.com"
+                    git add deploy-argocd/templates/deployment.yaml
+                    git commit -m "Update image tags to ${DOCKER_IMAGE_TAG}"
+                    git push https://${GIT_CREDENTIALS_USR}:${GIT_CREDENTIALS_PSW}@github.com/${REPO_URL} main
+                    '''
                 }
             }
         }
