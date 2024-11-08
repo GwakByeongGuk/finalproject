@@ -70,6 +70,7 @@ pipeline {
                 dir('finalprojectargocd') {
                     script {
                         def changes = sh(script: "git status --porcelain", returnStdout: true).trim()
+                        echo "Changes detected: ${changes}"
                         if (changes) {
                             sh '''
                             git config user.name "GwakByeongGuk"
@@ -88,11 +89,19 @@ pipeline {
         stage('Push Changes') {
             steps {
                 dir('finalprojectargocd') {
-                    script {
-                        sh "git push https://${GIT_CREDENTIALS_USR}:${GIT_CREDENTIALS_PSW}@github.com/${ARGOCD_REPO_URL} main"
+                    withCredentials([usernamePassword(credentialsId: 'github', usernameVariable: 'GIT_CREDENTIALS_USR', passwordVariable: 'GIT_CREDENTIALS_PSW')]) {
+                        sh '''
+                        git push https://${GIT_CREDENTIALS_USR}:${GIT_CREDENTIALS_PSW}@github.com/${ARGOCD_REPO_URL} main
+                        '''
                     }
                 }
             }
+        }
+    }
+
+    post {
+        always {
+            cleanWs()
         }
     }
 }
