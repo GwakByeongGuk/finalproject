@@ -5,6 +5,9 @@ pipeline {
         DOCKER_IMAGE_OWNER = 'gwakbyeongguk'
         DOCKER_IMAGE_TAG = 'latest'
         DOCKER_TOKEN = credentials('dockerhub') // Docker Hub 자격 증명
+        GIT_CREDENTIALS = credentials('github_token')
+        REPO_URL = 'GwakByeongGuk/finalproject.git'
+        COMMIT_MESSAGE = 'Update README.md via Jenkins Pipeline'
     }
 
     stages {
@@ -52,6 +55,29 @@ pipeline {
                     sh '''
                     curl -k -X POST https://15.164.179.57:31380/api/webhook -H "Content-Type: application/json" -d '{"ref": "main"}'
                     '''
+                }
+            }
+        }
+        
+        stage('Commit Changes') {
+            steps {
+                dir('hello-msa-cd') {
+                sh '''
+                    git config user.name "아이디"
+                    git config user.email "아이디@jenkins.com"
+                    git add README.md
+                    git commit -m "${COMMIT_MESSAGE}"
+                '''
+                }
+            }
+        }
+
+        stage('Push Changes') {
+            steps {
+                dir('hello-msa-argocd') {
+                sh '''
+                    git push https://${GIT_CREDENTIALS_USR}:${GIT_CREDENTIALS_PSW}@github.com/${REPO_URL} main
+                '''
                 }
             }
         }
