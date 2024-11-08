@@ -30,7 +30,6 @@ pipeline {
             }
         }
 
-
         stage('Docker Login') {
             steps {
                 script {
@@ -64,22 +63,20 @@ pipeline {
         
         stage('Commit Changes') {
             steps {
-                dir('finalproject') {
-                    sh '''
-                    git config user.name "GwakByeongGuk"
-                    git config user.email "GwakByeongGuk@jenkins.com"
-                    git add README.md
-                    git commit -m "${COMMIT_MESSAGE}"
-                    '''
-                }
+                sh '''
+                git config user.name "GwakByeongGuk"
+                git config user.email "GwakByeongGuk@jenkins.com"
+                git add README.md
+                git commit -m "${COMMIT_MESSAGE}"
+                '''
             }
         }
 
         stage('Push Changes') {
             steps {
-                dir('finalproject') {
+                script {
                     sh '''
-                    git push https://github.com/GwakByeongGuk/finalproject.git main
+                    git push https://${GIT_CREDENTIALS_USR}:${GIT_CREDENTIALS_PSW}@github.com/GwakByeongGuk/finalproject.git main
                     '''
                 }
             }
