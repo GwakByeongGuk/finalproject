@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         DOCKER_IMAGE_OWNER = 'gwakbyeongguk'
-        DOCKER_BUILD_TAG = 'v${env.BUILD_NUMBER}'
+        DOCKER_BUILD_TAG = "20241108.${env.BUILD_NUMBER}"
         DOCKER_TOKEN = credentials('dockerhub') // Docker Hub 자격 증명
         GIT_CREDENTIALS = credentials('github')
         REPO_URL = 'GwakByeongGuk/finalproject.git'
@@ -20,15 +20,13 @@ pipeline {
         stage('Docker Image Building') {
             steps {
                 script {
-                    sh "docker build -t ${DOCKER_IMAGE_OWNER}/prj-frontend:latest"
-                                    "-t ${DOCKER_IMAGE_OWNER}/prj-frontend:${DOCKER_BUILD_TAG} ./frontend"
-                    sh "docker build -t ${DOCKER_IMAGE_OWNER}/prj-admin:latest"
-                                    "-t ${DOCKER_IMAGE_OWNER}/prj-admin:${DOCKER_BUILD_TAG} ./admin-service"
-                    sh "docker build -t ${DOCKER_IMAGE_OWNER}/prj-visitor:latest"
-                                    "-t ${DOCKER_IMAGE_OWNER}/prj-visitor:${DOCKER_BUILD_TAG} ./visitor-service"
+                    sh "docker build -t ${DOCKER_IMAGE_OWNER}/prj-frontend:${DOCKER_BUILD_TAG} ./frontend"
+                    sh "docker build -t ${DOCKER_IMAGE_OWNER}/prj-admin:${DOCKER_BUILD_TAG} ./admin-service"
+                    sh "docker build -t ${DOCKER_IMAGE_OWNER}/prj-visitor:${DOCKER_BUILD_TAG} ./visitor-service"
                 }
             }
         }
+
 
         stage('Docker Login') {
             steps {
@@ -42,11 +40,11 @@ pipeline {
             steps {
                 script {
                     sh "docker push ${DOCKER_IMAGE_OWNER}/prj-frontend:latest"
-                       "docker push ${DOCKER_IMAGE_OWNER}/prj-frontend:${DOCKER_BUILD_TAG}"
+                    sh "docker push ${DOCKER_IMAGE_OWNER}/prj-frontend:${DOCKER_BUILD_TAG}"
                     sh "docker push ${DOCKER_IMAGE_OWNER}/prj-admin:latest"
-                       "docker push ${DOCKER_IMAGE_OWNER}/prj-admin:${DOCKER_BUILD_TAG}"
+                    sh "docker push ${DOCKER_IMAGE_OWNER}/prj-admin:${DOCKER_BUILD_TAG}"
                     sh "docker push ${DOCKER_IMAGE_OWNER}/prj-visitor:latest"
-                       "docker push ${DOCKER_IMAGE_OWNER}/prj-visitor:${DOCKER_BUILD_TAG}"
+                    sh "docker push ${DOCKER_IMAGE_OWNER}/prj-visitor:${DOCKER_BUILD_TAG}"
                 }
             }
         }
