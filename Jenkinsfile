@@ -4,9 +4,8 @@ pipeline {
     environment {
         DOCKER_IMAGE_OWNER = 'gwakbyeongguk'
         DOCKER_IMAGE_TAG = 'latest'
-        DOCKER_BUILD_TAG = "v${BUILD_NUMBER}"
-        DOCKER_TOKEN_USR = credentials('dockerhub').username
-        DOCKER_TOKEN_PSW = credentials('dockerhub').password
+        DOCKER_BUILD_TAG = 'v${env.BUILD_NUMBER}'
+        DOCKER_TOKEN = credentials('dockerhub') // Docker Hub 자격 증명
         GIT_CREDENTIALS = credentials('github')
         REPO_URL = 'GwakByeongGuk/finalproject.git'
         COMMIT_MESSAGE = 'Update README.md via Jenkins Pipeline'
