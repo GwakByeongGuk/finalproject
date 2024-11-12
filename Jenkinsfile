@@ -14,11 +14,11 @@ pipeline {
     stages {
             stage('Clone from SCM') {
                 steps {
-                    dir('project-jenkins') {
-                        git branch: 'master', url: "https://${GIT_CREDENTIALS_USR}:${GIT_CREDENTIALS_PSW}@github.com/${REPO_URL}"
+                    dir('finalproject') {
+                        git branch: 'main', url: "https://${GIT_CREDENTIALS_USR}:${GIT_CREDENTIALS_PSW}@github.com/${REPO_URL}"
                     }
-                    dir('project-argocd') {
-                        git branch: 'master', url: "https://${GIT_CREDENTIALS_USR}:${GIT_CREDENTIALS_PSW}@github.com/${ARGOCD_REPO_URL}"
+                    dir('finalprojectargocd') {
+                        git branch: 'main', url: "https://${GIT_CREDENTIALS_USR}:${GIT_CREDENTIALS_PSW}@github.com/${ARGOCD_REPO_URL}"
                    }
             }
         }
