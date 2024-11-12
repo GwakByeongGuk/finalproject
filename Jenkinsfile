@@ -71,8 +71,8 @@ pipeline {
                         def changes = sh(script: "git status --porcelain", returnStdout: true).trim()
                         if (changes) {
                             sh '''
-                            git config user.name "cks1031"
-                            git config user.email "cks1031@jenkins.com"
+                            git config user.name "gwakbyeongguk"
+                            git config user.email "gwakbyeongguk@jenkins.com"
                             git add deploy-argocd/values.yaml
                             git commit -m "Update image tags to ${DOCKER_BUILD_TAG}"
                             '''
