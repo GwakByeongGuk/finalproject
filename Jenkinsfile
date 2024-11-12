@@ -12,70 +12,67 @@ pipeline {
     }
 
     stages {
-        stage('Clone from SCM') {
-            steps {
-                dir('finalproject') {
-                    git branch: 'main', url: "https://${GIT_CREDENTIALS_USR}:${GIT_CREDENTIALS_PSW}@github.com/${REPO_URL}"
-                }
-                dir('finalprojectargocd') {
-                    git branch: 'main', url: "https://${GIT_CREDENTIALS_USR}:${GIT_CREDENTIALS_PSW}@github.com/${ARGOCD_REPO_URL}"
-                }
+            stage('Clone from SCM') {
+                steps {
+                    dir('project-jenkins') {
+                        git branch: 'master', url: "https://${GIT_CREDENTIALS_USR}:${GIT_CREDENTIALS_PSW}@github.com/${REPO_URL}"
+                    }
+                    dir('project-argocd') {
+                        git branch: 'master', url: "https://${GIT_CREDENTIALS_USR}:${GIT_CREDENTIALS_PSW}@github.com/${ARGOCD_REPO_URL}"
+                   }
             }
         }
-
-        stage('Docker Image Building') {
-            steps {
-                script {
-                    sh "docker build -t ${DOCKER_IMAGE_OWNER}/prj-frontend:latest ./frontend"
-                    sh "docker build -t ${DOCKER_IMAGE_OWNER}/prj-frontend:${DOCKER_BUILD_TAG} ./frontend"
-                    sh "docker build -t ${DOCKER_IMAGE_OWNER}/prj-admin:${DOCKER_BUILD_TAG} ./admin-service"
-                    sh "docker build -t ${DOCKER_IMAGE_OWNER}/prj-visitor:${DOCKER_BUILD_TAG} ./visitor-service"
-                }
+    stage('Docker Image Building') {
+          steps {
+                sh '''
+                docker build -t ${DOCKER_IMAGE_OWNER}/prj-frontend:latest ./frontend
+                docker build -t ${DOCKER_IMAGE_OWNER}/prj-frontend:${DOCKER_BUILD_TAG} ./frontend
+                docker build -t ${DOCKER_IMAGE_OWNER}/prj-admin:${DOCKER_BUILD_TAG} ./admin-service
+                docker build -t ${DOCKER_IMAGE_OWNER}/prj-visitor:${DOCKER_BUILD_TAG} ./visitor-service
+                '''
             }
         }
 
         stage('Docker Login') {
             steps {
-                script {
-                    sh "echo ${DOCKER_TOKEN_PSW} | docker login -u ${DOCKER_TOKEN_USR} --password-stdin"
+                withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USR', passwordVariable: 'DOCKER_PWD')]) {
+                    sh "echo $DOCKER_PWD | docker login -u $DOCKER_USR --password-stdin"
                 }
             }
         }
 
         stage('Docker Image Pushing') {
             steps {
-                script {
-                    sh "docker push ${DOCKER_IMAGE_OWNER}/prj-frontend:latest"
-                    sh "docker push ${DOCKER_IMAGE_OWNER}/prj-frontend:${DOCKER_BUILD_TAG}"
-                    sh "docker push ${DOCKER_IMAGE_OWNER}/prj-admin:${DOCKER_BUILD_TAG}"
-                    sh "docker push ${DOCKER_IMAGE_OWNER}/prj-visitor:${DOCKER_BUILD_TAG}"
-                }
+                sh '''
+                docker push ${DOCKER_IMAGE_OWNER}/prj-frontend:latest
+                docker push ${DOCKER_IMAGE_OWNER}/prj-frontend:${DOCKER_BUILD_TAG}
+                docker push ${DOCKER_IMAGE_OWNER}/prj-admin:${DOCKER_BUILD_TAG}
+                docker push ${DOCKER_IMAGE_OWNER}/prj-visitor:${DOCKER_BUILD_TAG}
+                '''
             }
         }
 
         stage('Update ArgoCD values.yaml with Image Tags') {
             steps {
-                dir('finalprojectargocd') {
+                dir('project-argocd') {
                     sh """
-                    sed -i "s|frontend:.*|frontend:\\n    repository: ${DOCKER_IMAGE_OWNER}/prj-frontend\\n    tag: \\\"${DOCKER_BUILD_TAG}\\\"|g" deploy-argocd/values.yaml
-                    sed -i "s|admin:.*|admin:\\n    repository: ${DOCKER_IMAGE_OWNER}/prj-admin\\n    tag: \\\"${DOCKER_BUILD_TAG}\\\"|g" deploy-argocd/values.yaml
-                    sed -i "s|visitor:.*|visitor:\\n    repository: ${DOCKER_IMAGE_OWNER}/prj-visitor\\n    tag: \\\"${DOCKER_BUILD_TAG}\\\"|g" deploy-argocd/values.yaml
+                    sed -i "/${DOCKER_IMAGE_OWNER}\\/prj-frontend/{n;s/tag: \\".*\\"/tag: \\"${DOCKER_BUILD_TAG}\\"/}" deploy-argocd/values.yaml
+                    sed -i "/${DOCKER_IMAGE_OWNER}\\/prj-admin/{n;s/tag: \\".*\\"/tag: \\"${DOCKER_BUILD_TAG}\\"/}" deploy-argocd/values.yaml
+                    sed -i "/${DOCKER_IMAGE_OWNER}\\/prj-visitor/{n;s/tag: \\".*\\"/tag: \\"${DOCKER_BUILD_TAG}\\"/}" deploy-argocd/values.yaml
                     """
                 }
             }
         }
 
-        
         stage('Commit Changes') {
             steps {
-                dir('finalprojectargocd') {
-                    script {
+                dir('project-argocd') {
+                    script{
                         def changes = sh(script: "git status --porcelain", returnStdout: true).trim()
-                        echo "Changes detected: ${changes}"
                         if (changes) {
                             sh '''
-                            git config user.name "GwakByeongGuk"
-                            git config user.email "GwakByeongGuk@jenkins.com"
+                            git config user.name "cks1031"
+                            git config user.email "cks1031@jenkins.com"
                             git add deploy-argocd/values.yaml
                             git commit -m "Update image tags to ${DOCKER_BUILD_TAG}"
                             '''
@@ -89,17 +86,16 @@ pipeline {
 
         stage('Push Changes') {
             steps {
-                dir('finalprojectargocd') {
-                    withCredentials([usernamePassword(credentialsId: 'github', usernameVariable: 'GIT_CREDENTIALS_USR', passwordVariable: 'GIT_CREDENTIALS_PSW')]) {
+                dir('project-argocd') {
+                    withCredentials([usernamePassword(credentialsId: 'github_token', usernameVariable: 'GIT_CREDENTIALS_USR', passwordVariable: 'GIT_CREDENTIALS_PSW')]) {
                         sh '''
-                        git push https://${GIT_CREDENTIALS_USR}:${GIT_CREDENTIALS_PSW}@github.com/${ARGOCD_REPO_URL} main
+                        git push https://${GIT_CREDENTIALS_USR}:${GIT_CREDENTIALS_PSW}@github.com/${ARGOCD_REPO_URL} master
                         '''
                     }
                 }
             }
         }
     }
-
     post {
         always {
             cleanWs()
