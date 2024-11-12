@@ -66,7 +66,7 @@ pipeline {
 
         stage('Commit Changes') {
             steps {
-                dir('project-argocd') {
+                dir('finalprojectargocd') {
                     script{
                         def changes = sh(script: "git status --porcelain", returnStdout: true).trim()
                         if (changes) {
@@ -86,7 +86,7 @@ pipeline {
 
         stage('Push Changes') {
             steps {
-                dir('project-argocd') {
+                dir('finalprojectargocd') {
                     withCredentials([usernamePassword(credentialsId: 'github_token', usernameVariable: 'GIT_CREDENTIALS_USR', passwordVariable: 'GIT_CREDENTIALS_PSW')]) {
                         sh '''
                         git push https://${GIT_CREDENTIALS_USR}:${GIT_CREDENTIALS_PSW}@github.com/${ARGOCD_REPO_URL} master
