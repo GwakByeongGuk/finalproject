@@ -89,7 +89,7 @@ pipeline {
                 dir('finalprojectargocd') {
                     withCredentials([usernamePassword(credentialsId: 'github', usernameVariable: 'GIT_CREDENTIALS_USR', passwordVariable: 'GIT_CREDENTIALS_PSW')]) {
                         sh '''
-                        git push https://${GIT_CREDENTIALS_USR}:${GIT_CREDENTIALS_PSW}@github.com/${ARGOCD_REPO_URL} master
+                        git push https://${GIT_CREDENTIALS_USR}:${GIT_CREDENTIALS_PSW}@github.com/${ARGOCD_REPO_URL} main
                         '''
                     }
                 }
