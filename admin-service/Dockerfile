@@ -1,5 +1,5 @@
-# 베이스 이미지로 Python 3.11 사용
-FROM --platform=linux/arm64 python:3.11-slim-bullseye
+# 베이스 이미지로 ARM 아키텍처 지원 Python 3.11 사용
+FROM arm64v8/python:3.11-slim-bullseye
 
 # 작업 디렉토리 설정
 WORKDIR /app
@@ -7,12 +7,11 @@ WORKDIR /app
 # 의존성 목록을 복사
 COPY requirements.txt .
 
-# 의존성 설치
-RUN pip install --no-cache-dir -r requirements.txt
+# 의존성 설치 및 uvicorn 최신 버전 업그레이드
+RUN pip install --no-cache-dir -r requirements.txt && pip install "uvicorn[standard]" --upgrade
 
 # 전체 소스 코드 복사
 COPY . .
 
 # FastAPI 애플리케이션 실행
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
-
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
