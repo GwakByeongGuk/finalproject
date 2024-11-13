@@ -1,5 +1,6 @@
 # 베이스 이미지로 ARM 아키텍처 지원 Python 3.11 사용
-FROM arm64v8/python:3.11-slim-bullseye
+FROM --platform=linux/arm64 python:3.11
+
 
 # 작업 디렉토리 설정
 WORKDIR /app
