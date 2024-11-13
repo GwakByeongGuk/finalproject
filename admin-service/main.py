@@ -1,4 +1,3 @@
-// admin main
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
 from starlette.middleware.cors import CORSMiddleware
