@@ -22,16 +22,18 @@ pipeline {
                    }
             }
         }
-    stage('Docker Image Building') {
-          steps {
+        
+        stage('Docker Image Building') {
+            steps {
                 sh '''
-                docker build -t ${DOCKER_IMAGE_OWNER}/prj-frontend:latest ./frontend
-                docker build -t ${DOCKER_IMAGE_OWNER}/prj-frontend:${DOCKER_BUILD_TAG} ./frontend
-                docker build -t ${DOCKER_IMAGE_OWNER}/prj-admin:${DOCKER_BUILD_TAG} ./admin-service
-                docker build -t ${DOCKER_IMAGE_OWNER}/prj-visitor:${DOCKER_BUILD_TAG} ./visitor-service
+                docker build --platform linux/arm64 -t ${DOCKER_IMAGE_OWNER}/prj-frontend:latest ./frontend
+                docker build --platform linux/arm64 -t ${DOCKER_IMAGE_OWNER}/prj-frontend:${DOCKER_BUILD_TAG} ./frontend
+                docker build --platform linux/arm64 -t ${DOCKER_IMAGE_OWNER}/prj-admin:${DOCKER_BUILD_TAG} ./admin-service
+                docker build --platform linux/arm64 -t ${DOCKER_IMAGE_OWNER}/prj-visitor:${DOCKER_BUILD_TAG} ./visitor-service
                 '''
             }
         }
+
 
         stage('Docker Login') {
             steps {
