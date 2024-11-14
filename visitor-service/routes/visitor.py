@@ -51,7 +51,7 @@ async def visitor_register(
     new_visitor.token = token
     db.commit()
 
-    approval_link = f"http://13.209.97.89:3000/visitor-detail?token={token}"
+    approval_link = f"http://13.125.239.118/visitor-detail?token={token}"
     send_notification_email(email, approval_link, token)
 
     return {"message": "Visitor registered successfully"}
